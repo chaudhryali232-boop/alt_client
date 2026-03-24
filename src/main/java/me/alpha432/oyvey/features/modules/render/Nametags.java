@@ -2,6 +2,7 @@ package me.alpha432.oyvey.features.modules.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.alpha432.oyvey.event.impl.render.Render2DEvent;
+import me.alpha432.oyvey.event.system.Subscribe; // Added for event system
 import me.alpha432.oyvey.features.modules.Module;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
@@ -12,16 +13,13 @@ import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
-// Fix: Import for GameProfile if needed
-import com.mojang.authlib.GameProfile;
-
 public class Nametags extends Module {
 
     public Nametags() {
         super("Nametags", "Renders detailed nametags above players.", Category.RENDER);
     }
 
-    @Override
+    @Subscribe
     public void onRender2D(Render2DEvent event) {
         GuiGraphics graphics = event.getContext();
         float delta = event.getDelta();
@@ -37,26 +35,23 @@ public class Nametags extends Module {
     }
 
     private void renderNametag(GuiGraphics graphics, Player player, float delta) {
-        // --- Data ---
-        // Fix: Use getName() or name() depending on authlib version, getName() is usually correct
-        String name     = player.getGameProfile().getName();
-        float health    = player.getHealth();
+        String name = player.getGameProfile().getName();
+        float health = player.getHealth();
         float maxHealth = player.getMaxHealth();
         float healthPct = Mth.clamp(health / maxHealth, 0f, 1f);
 
-        ItemStack helmet  = player.getItemBySlot(EquipmentSlot.HEAD);
-        ItemStack chest   = player.getItemBySlot(EquipmentSlot.CHEST);
-        ItemStack legs    = player.getItemBySlot(EquipmentSlot.LEGS);
-        ItemStack boots   = player.getItemBySlot(EquipmentSlot.FEET);
+        ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+        ItemStack legs = player.getItemBySlot(EquipmentSlot.LEGS);
+        ItemStack boots = player.getItemBySlot(EquipmentSlot.FEET);
         ItemStack offhand = player.getOffhandItem();
 
-        // --- Layout ---
-        int pad         = 5;
-        int headSize    = 18;
-        int iconSize    = 16; // Standard item size
-        int barHeight   = 3;
+        int pad = 5;
+        int headSize = 18;
+        int iconSize = 16;
+        int barHeight = 3;
 
-        int nameWidth   = mc.font.width(name);
+        int nameWidth = mc.font.width(name);
         int topRowWidth = headSize + pad + nameWidth;
 
         ItemStack[] armorSlots = { helmet, chest, legs, boots };
@@ -66,10 +61,9 @@ public class Nametags extends Module {
         if (!offhand.isEmpty()) armorRowWidth += iconSize + 6;
 
         int innerWidth = Math.max(topRowWidth, Math.max(armorRowWidth, 60));
-        int tagW       = innerWidth + pad * 2;
-        int tagH       = pad + headSize + pad + barHeight + pad + iconSize + pad;
+        int tagW = innerWidth + pad * 2;
+        int tagH = pad + headSize + pad + barHeight + pad + iconSize + pad;
 
-        // --- World to screen ---
         double wx = Mth.lerp(delta, player.xOld, player.getX());
         double wy = Mth.lerp(delta, player.yOld, player.getY()) + player.getBbHeight() + 0.3;
         double wz = Mth.lerp(delta, player.zOld, player.getZ());
@@ -80,99 +74,67 @@ public class Nametags extends Module {
         int sx = screen[0] - tagW / 2;
         int sy = screen[1] - tagH / 2;
 
-        // --- Background ---
         drawRoundedRect(graphics, sx, sy, tagW, tagH, 5, 0xCC0D0D0D);
-        drawRoundedRectBorder(graphics, sx, sy, tagW, tagH, 5, 0xFF222222);
 
         int cx = sx + pad;
         int cy = sy + pad;
 
-        // --- Player head ---
         drawPlayerHead(graphics, player, cx, cy, headSize);
-
-        // --- Name ---
         graphics.drawString(mc.font, name, cx + headSize + pad, cy + headSize / 2 - mc.font.lineHeight / 2, 0xFFFFFFFF, true);
 
         cy += headSize + pad;
-
-        // --- Health bar ---
         int barW = tagW - pad * 2;
         graphics.fill(cx, cy, cx + barW, cy + barHeight, 0xFF2A2A2A);
         graphics.fill(cx, cy, cx + (int)(barW * healthPct), cy + barHeight, getHealthColor(healthPct));
 
-        // Health number
         String hpStr = String.format("%.1f", health);
-        graphics.drawString(mc.font, hpStr, 
-                sx + tagW - pad - mc.font.width(hpStr), 
-                cy - mc.font.lineHeight - 1, 
-                getHealthColor(healthPct), true);
+        graphics.drawString(mc.font, hpStr, sx + tagW - pad - mc.font.width(hpStr), cy - mc.font.lineHeight - 1, getHealthColor(healthPct), true);
 
         cy += barHeight + pad;
-
-        // --- Armor icons ---
         int ix = cx;
         for (ItemStack stack : armorSlots) {
             if (stack.isEmpty()) continue;
             graphics.renderItem(stack, ix, cy);
-            if (stack.isDamageableItem()) {
-                float dur = 1f - (float) stack.getDamageValue() / stack.getMaxDamage();
-                graphics.fill(ix, cy + iconSize + 1, ix + iconSize, cy + iconSize + 2, 0xFF333333);
-                graphics.fill(ix, cy + iconSize + 1, ix + (int)(iconSize * dur), cy + iconSize + 2, getHealthColor(dur));
-            }
             ix += iconSize + 2;
         }
 
-        // --- Offhand ---
         if (!offhand.isEmpty()) {
             ix += 4;
             graphics.renderItem(offhand, ix, cy);
-            graphics.drawString(mc.font, "OFF", ix, cy - mc.font.lineHeight, 0xFFAAAAAA, true);
         }
     }
 
     private int getHealthColor(float pct) {
-        pct = Mth.clamp(pct, 0f, 1f);
         int r = (int)(255 * (1f - pct));
         int g = (int)(255 * pct);
         return 0xFF000000 | (r << 16) | (g << 8);
     }
 
     private void drawPlayerHead(GuiGraphics graphics, Player player, int x, int y, int size) {
-        // Fix: Modern SkinManager usage (1.20.2+)
-        // If this still fails, your version might use getSkin(player.getGameProfile())
+        // Updated for modern SkinManager
         ResourceLocation skin = mc.getSkinManager().getInsecureSkin(player.getGameProfile()).texture();
         graphics.blit(skin, x, y, size, size, 8f, 8f, 8, 8, 64, 64);
         graphics.blit(skin, x, y, size, size, 40f, 8f, 8, 8, 64, 64);
     }
 
     private void drawRoundedRect(GuiGraphics g, int x, int y, int w, int h, int r, int color) {
-        g.fill(x + r, y,     x + w - r, y + h,     color);
-        g.fill(x,     y + r, x + r,     y + h - r, color);
-        g.fill(x+w-r, y + r, x + w,     y + h - r, color);
-        // Simplified rounded corners for GuiGraphics
-    }
-
-    private void drawRoundedRectBorder(GuiGraphics g, int x, int y, int w, int h, int r, int color) {
-        g.fill(x + r,     y,         x + w - r, y + 1,     color);
-        g.fill(x + r,     y + h - 1, x + w - r, y + h,     color);
-        g.fill(x,         y + r,     x + 1,     y + h - r, color);
-        g.fill(x + w - 1, y + r,     x + w,     y + h - r, color);
+        g.fill(x + r, y, x + w - r, y + h, color);
+        g.fill(x, y + r, x + r, y + h - r, color);
+        g.fill(x + w - r, y + r, x + w, y + h - r, color);
     }
 
     private int[] worldToScreen(double wx, double wy, double wz) {
-        // Fix: getPosition() changed to getPos() in most mappings
-        var cam = mc.gameRenderer.getMainCamera().getPos();
+        var cam = mc.gameRenderer.getMainCamera().getPos(); // Fix: getPos() instead of getPosition()
 
         float dx = (float)(wx - cam.x);
         float dy = (float)(wy - cam.y);
         float dz = (float)(wz - cam.z);
 
-        // Fix: ModelView and Projection matrix access
         Matrix4f view = RenderSystem.getModelViewMatrix();
         Matrix4f proj = RenderSystem.getProjectionMatrix();
 
         Vector4f pos = new Vector4f(dx, dy, dz, 1f);
-        pos.mul(view); // Fix: JOML uses .mul() instead of .transform() for Matrix4f
+        pos.mul(view); // Fix: .mul() for JOML
         pos.mul(proj);
 
         if (pos.w <= 0f) return null;
