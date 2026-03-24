@@ -1,112 +1,108 @@
-package me.alpha432.oyvey.features.modules.render;
+Microsoft Windows [Version 10.0.22621.4317]
+(c) Microsoft Corporation. All rights reserved.
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import me.alpha432.oyvey.event.impl.render.Render2DEvent;
-import me.alpha432.oyvey.event.system.Subscribe;
-import me.alpha432.oyvey.features.modules.Module;
-import net.minecraft.client.gui.GuiGraphics;
+C:\Users\user>cd alt_client
+
+C:\Users\user\alt_client>gradlew build
+
+> Configure project :
+Fabric Loom: 1.14.10
+
+> Task :compileJava
+C:\Users\user\alt_client\src\main\java\me\alpha432\oyvey\features\modules\render\Nametags.java:7: error: cannot find symbol
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.util.Mth;
-import org.joml.Matrix4f;
-import org.joml.Vector4f;
-
-public class Nametags extends Module {
-
-    public Nametags() {
-        super("Nametags", "Renders detailed nametags above players.", Category.RENDER);
-    }
-
-    @Subscribe
-    public void onRender2D(Render2DEvent event) {
-        GuiGraphics graphics = event.getContext();
-        float delta = event.getDelta();
-
-        if (mc.level == null || mc.player == null) return;
-
-        for (Player player : mc.level.players()) {
-            if (player == mc.player || player.isInvisible()) continue;
-            renderNametag(graphics, player, delta);
-        }
-    }
-
-    private void renderNametag(GuiGraphics graphics, Player player, float delta) {
-        String name = player.getGameProfile().getName();
-        float health = player.getHealth();
-        float maxHealth = player.getMaxHealth();
-        float healthPct = Mth.clamp(health / maxHealth, 0f, 1f);
-
-        // Layout constants
-        int pad = 5;
-        int headSize = 18;
-        int barHeight = 3;
-
-        // World to screen projection
-        double wx = Mth.lerp(delta, player.xOld, player.getX());
-        double wy = Mth.lerp(delta, player.yOld, player.getY()) + player.getBbHeight() + 0.3;
-        double wz = Mth.lerp(delta, player.zOld, player.getZ());
-
-        int[] screen = worldToScreen(wx, wy, wz);
-        if (screen == null) return;
-
-        int tagW = Math.max(mc.font.width(name) + headSize + pad * 3, 60);
-        int tagH = headSize + pad * 2 + barHeight + 2;
-
-        int sx = screen[0] - tagW / 2;
-        int sy = screen[1] - tagH / 2;
-
-        // Background
-        graphics.fill(sx, sy, sx + tagW, sy + tagH, 0xCC0D0D0D);
-
-        // Name & Head
-        drawPlayerHead(graphics, player, sx + pad, sy + pad, headSize);
-        graphics.drawString(mc.font, name, sx + headSize + pad * 2, sy + pad + (headSize / 2 - 4), 0xFFFFFFFF, true);
-
-        // Health Bar
-        int barY = sy + headSize + pad + 1;
-        graphics.fill(sx + pad, barY, sx + tagW - pad, barY + barHeight, 0xFF2A2A2A);
-        graphics.fill(sx + pad, barY, sx + pad + (int)((tagW - pad * 2) * healthPct), barY + barHeight, getHealthColor(healthPct));
-    }
-
-    private int getHealthColor(float pct) {
-        int r = (int)(255 * (1f - pct));
-        int g = (int)(255 * pct);
-        return 0xFF000000 | (r << 16) | (g << 8);
-    }
-
-    private void drawPlayerHead(GuiGraphics graphics, Player player, int x, int y, int size) {
-        // Fix for SkinManager mapping error
+                              ^
+  symbol:   class ResourceLocation
+  location: package net.minecraft.resources
+C:\Users\user\alt_client\src\main\java\me\alpha432\oyvey\features\modules\render\Nametags.java:38: error: cannot find symbol
+        String name     = player.getGameProfile().getName();
+                                                 ^
+  symbol:   method getName()
+  location: class GameProfile
+C:\Users\user\alt_client\src\main\java\me\alpha432\oyvey\features\modules\render\Nametags.java:139: error: cannot find symbol
         ResourceLocation skin = mc.getSkinManager().getInsecureSkin(player.getGameProfile()).texture();
-        graphics.blit(skin, x, y, size, size, 8f, 8f, 8, 8, 64, 64);
-        graphics.blit(skin, x, y, size, size, 40f, 8f, 8, 8, 64, 64);
-    }
+        ^
+  symbol:   class ResourceLocation
+  location: class Nametags
+C:\Users\user\alt_client\src\main\java\me\alpha432\oyvey\features\modules\render\Nametags.java:139: error: cannot find symbol
+        ResourceLocation skin = mc.getSkinManager().getInsecureSkin(player.getGameProfile()).texture();
+                                                   ^
+  symbol:   method getInsecureSkin(GameProfile)
+  location: class SkinManager
+C:\Users\user\alt_client\src\main\java\me\alpha432\oyvey\features\modules\render\Nametags.java:165: error: cannot find symbol
+        var cam = mc.gameRenderer.getMainCamera().getPosition();
+                                                 ^
+  symbol:   method getPosition()
+  location: class Camera
+C:\Users\user\alt_client\src\main\java\me\alpha432\oyvey\features\modules\render\Nametags.java:172: error: cannot find symbol
+        Matrix4f proj = new Matrix4f(RenderSystem.getProjectionMatrix());
+                                                 ^
+  symbol:   method getProjectionMatrix()
+  location: class RenderSystem
+C:\Users\user\alt_client\src\main\java\me\alpha432\oyvey\manager\ModuleManager.java:54: error: cannot find symbol
+        register(new Nametags());
+                     ^
+  symbol:   class Nametags
+  location: class ModuleManager
+7 errors
 
-    private int[] worldToScreen(double wx, double wy, double wz) {
-        // Fix for getPosition() -> getPos() mapping
-        var cam = mc.gameRenderer.getMainCamera().getPos();
+> Task :compileJava FAILED
 
-        float dx = (float)(wx - cam.x);
-        float dy = (float)(wy - cam.y);
-        float dz = (float)(wz - cam.z);
+[Incubating] Problems report is available at: file:///C:/Users/user/alt_client/build/reports/problems/problems-report.html
 
-        // Fix for Matrix4f instantiation and transform calls
-        Matrix4f view = RenderSystem.getModelViewMatrix();
-        Matrix4f proj = RenderSystem.getProjectionMatrix();
+FAILURE: Build failed with an exception.
 
-        Vector4f pos = new Vector4f(dx, dy, dz, 1f);
-        pos.mul(view);
-        pos.mul(proj);
+* What went wrong:
+Execution failed for task ':compileJava'.
+> Compilation failed; see the compiler output below.
+  C:\Users\user\alt_client\src\main\java\me\alpha432\oyvey\features\modules\render\Nametags.java:7: error: cannot find symbol
+  import net.minecraft.resources.ResourceLocation;
+                                ^
+    symbol:   class ResourceLocation
+    location: package net.minecraft.resources
+  C:\Users\user\alt_client\src\main\java\me\alpha432\oyvey\features\modules\render\Nametags.java:139: error: cannot find symbol
+          ResourceLocation skin = mc.getSkinManager().getInsecureSkin(player.getGameProfile()).texture();
+          ^
+    symbol:   class ResourceLocation
+    location: class Nametags
+  C:\Users\user\alt_client\src\main\java\me\alpha432\oyvey\manager\ModuleManager.java:54: error: cannot find symbol
+          register(new Nametags());
+                       ^
+    symbol:   class Nametags
+    location: class ModuleManager
+  C:\Users\user\alt_client\src\main\java\me\alpha432\oyvey\features\modules\render\Nametags.java:38: error: cannot find symbol
+          String name     = player.getGameProfile().getName();
+                                                   ^
+    symbol:   method getName()
+    location: class GameProfile
+  C:\Users\user\alt_client\src\main\java\me\alpha432\oyvey\features\modules\render\Nametags.java:139: error: cannot find symbol
+          ResourceLocation skin = mc.getSkinManager().getInsecureSkin(player.getGameProfile()).texture();
+                                                     ^
+    symbol:   method getInsecureSkin(GameProfile)
+    location: class SkinManager
+  C:\Users\user\alt_client\src\main\java\me\alpha432\oyvey\features\modules\render\Nametags.java:165: error: cannot find symbol
+          var cam = mc.gameRenderer.getMainCamera().getPosition();
+                                                   ^
+    symbol:   method getPosition()
+    location: class Camera
+  C:\Users\user\alt_client\src\main\java\me\alpha432\oyvey\features\modules\render\Nametags.java:172: error: cannot find symbol
+          Matrix4f proj = new Matrix4f(RenderSystem.getProjectionMatrix());
+                                                   ^
+    symbol:   method getProjectionMatrix()
+    location: class RenderSystem
+  7 errors
 
-        if (pos.w <= 0f) return null;
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to generate a Build Scan (powered by Develocity).
 
-        float ndcX = pos.x / pos.w;
-        float ndcY = pos.y / pos.w;
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
 
-        int screenX = (int)((ndcX + 1f) / 2f * mc.getWindow().getGuiScaledWidth());
-        int screenY = (int)((1f - ndcY) / 2f * mc.getWindow().getGuiScaledHeight());
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
 
-        return new int[]{ screenX, screenY };
-    }
-}
+For more on this, please refer to https://docs.gradle.org/9.2.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 6s
+2 actionable tasks: 2 executed
+
+C:\Users\user\alt_client>
