@@ -22,9 +22,7 @@ import me.alpha432.oyvey.features.modules.player.FastPlaceModule;
 import me.alpha432.oyvey.features.modules.player.NoFallModule;
 import me.alpha432.oyvey.features.modules.player.VelocityModule;
 import me.alpha432.oyvey.features.modules.render.BlockHighlightModule;
-// --- ADDED THIS IMPORT ---
-import me.alpha432.oyvey.features.modules.render.Nametags; 
-// -------------------------
+import me.alpha432.oyvey.features.modules.render.Nametags; // FIXED: Added missing import
 import me.alpha432.oyvey.util.traits.Jsonable;
 import me.alpha432.oyvey.util.traits.Util;
 import org.slf4j.Logger;
@@ -54,8 +52,7 @@ public class ModuleManager implements Jsonable, Util {
         register(new BlockHighlightModule());
         register(new NoFallModule());
         register(new KeyPearlModule());
-        // --- THIS LINE WILL NOW WORK ---
-        register(new Nametags()); 
+        register(new Nametags()); // FIXED: Compiler now finds this class
         
         LOGGER.info("Registered {} modules", modules.size());
 
