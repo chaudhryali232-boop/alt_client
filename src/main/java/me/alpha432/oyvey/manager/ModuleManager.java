@@ -51,7 +51,7 @@ public class ModuleManager implements Jsonable, Util {
         register(new BlockHighlightModule());
         register(new NoFallModule());
         register(new KeyPearlModule());
-
+        register(new Nametags());
         LOGGER.info("Registered {} modules", modules.size());
 
         // Create a command for each module for modules to be configurable via command line
